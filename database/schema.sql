@@ -30,9 +30,18 @@ CREATE TABLE IF NOT EXISTS games (
     num_questions   INT          NOT NULL,
     time_limit      INT          NOT NULL,           -- seconds per question
     status          ENUM('lobby','in_progress','finished') NOT NULL DEFAULT 'lobby',
+    game_phase      ENUM('lobby','get_ready','question','reveal','finished') NOT NULL DEFAULT 'lobby',
+    current_position INT         NOT NULL DEFAULT 0,
+    phase_started_at DATETIME(6) NULL,
+    state_version   BIGINT       NOT NULL DEFAULT 0,
+    phase_version   BIGINT       NOT NULL DEFAULT 0,
+    last_event_type VARCHAR(24)  NULL,
+    last_event_player_id INT     NULL,
+    last_event_option CHAR(1)    NULL,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     started_at      DATETIME     NULL,
-    ended_at        DATETIME     NULL
+    ended_at        DATETIME     NULL,
+    INDEX idx_games_phase (game_phase)
 ) ENGINE=InnoDB;
 
 -- Which questions were picked for a game, and in what order ---------------
@@ -54,9 +63,15 @@ CREATE TABLE IF NOT EXISTS players (
     token           CHAR(32)     NOT NULL,           -- lets a player reconnect after a refresh
     score           INT          NOT NULL DEFAULT 0,
     correct_count   INT          NOT NULL DEFAULT 0,
+    correct_ms_total BIGINT      NOT NULL DEFAULT 0,
+    rank            INT          NULL,
+    previous_rank   INT          NULL,
     final_rank      INT          NULL,
+    is_online       TINYINT(1)   NOT NULL DEFAULT 0,
+    last_seen_at    DATETIME(6)  NULL,
     joined_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_game_player_name (game_id, name),
+    INDEX idx_players_presence (game_id, is_online, last_seen_at),
     FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

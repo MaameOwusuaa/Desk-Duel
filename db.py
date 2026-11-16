@@ -140,6 +140,21 @@ def code_exists(code):
     return _query("SELECT id FROM games WHERE code = %s", (code,), fetch="one") is not None
 
 
+def count_live_games():
+    row = _query("SELECT COUNT(*) AS n FROM games WHERE game_phase <> 'finished'", fetch="one")
+    return row["n"]
+
+
+def live_game_status(code):
+    return _query(
+        "SELECT g.code, g.game_phase AS phase, g.host_name, g.num_questions, g.time_limit, "
+        "COUNT(p.id) AS players, g.status "
+        "FROM games g LEFT JOIN players p ON p.game_id = g.id "
+        "WHERE g.code = %s GROUP BY g.id",
+        (code,), fetch="one",
+    )
+
+
 def create_game(code, host_name, host_token, category, num_questions, time_limit):
     """Creates the game, picks random questions, returns (game_id, questions)."""
     conn = get_pool().get_connection()

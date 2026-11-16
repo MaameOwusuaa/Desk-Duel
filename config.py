@@ -62,7 +62,7 @@ else:
         if value:
             DB_CONNECT_OPTIONS[option] = value in ("1", "true", "yes", "required")
 
-DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "3"))
 
 # Game rules
 MIN_PLAYERS = 2
@@ -83,3 +83,8 @@ HOST_PIN = os.getenv("HOST_PIN", "2002").strip()
 # Optional: the address players should open, e.g. http://192.168.1.20:8000
 # Leave blank and the server works out its own office-network address.
 PUBLIC_URL = os.getenv("PUBLIC_URL", "").rstrip("/")
+
+# Comma-separated browser origins allowed to call this API (needed when the
+# static frontend and API are deployed as separate Vercel projects).
+FRONTEND_ORIGINS = [origin.strip().rstrip("/") for origin in
+                    os.getenv("FRONTEND_ORIGINS", "").split(",") if origin.strip()]
