@@ -3,3 +3,4 @@
 __pycache__
 .desk_duel
 .env.example
+.sql
