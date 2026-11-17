@@ -26,10 +26,28 @@ if DATABASE_URL:
     DB_NAME = unquote(parsed_url.path.lstrip("/"))
 
     query_options = parse_qs(parsed_url.query)
+    ssl_mode = (query_options.get("ssl_mode", [os.getenv("DB_SSL_MODE", "")])[0] or "").upper()
     for option in ("ssl_ca", "ssl_cert", "ssl_key"):
         value = query_options.get(option, [None])[0] or os.getenv(f"DB_{option.upper()}")
         if value:
             DB_CONNECT_OPTIONS[option] = value
+
+    if ssl_mode == "DISABLED":
+        DB_CONNECT_OPTIONS["ssl_disabled"] = True
+    elif ssl_mode == "VERIFY_CA":
+        if not DB_CONNECT_OPTIONS.get("ssl_ca"):
+            raise ValueError("ssl_mode=VERIFY_CA requires ssl_ca")
+        DB_CONNECT_OPTIONS["ssl_verify_cert"] = True
+    elif ssl_mode == "VERIFY_IDENTITY":
+        if not DB_CONNECT_OPTIONS.get("ssl_ca"):
+            raise ValueError("ssl_mode=VERIFY_IDENTITY requires ssl_ca")
+        DB_CONNECT_OPTIONS["ssl_verify_cert"] = True
+        DB_CONNECT_OPTIONS["ssl_verify_identity"] = True
+    elif ssl_mode == "REQUIRED":
+        raise ValueError("ssl_mode=REQUIRED is not supported by this connector configuration; use VERIFY_CA or VERIFY_IDENTITY with ssl_ca")
+    elif ssl_mode and ssl_mode != "PREFERRED":
+        raise ValueError("ssl_mode must be DISABLED, PREFERRED, VERIFY_CA, or VERIFY_IDENTITY")
+
     for option in ("ssl_verify_cert", "ssl_verify_identity"):
         value = query_options.get(option, [os.getenv(f"DB_{option.upper()}", "")])[0]
         if value:
