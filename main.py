@@ -42,7 +42,10 @@ async def lifespan(_app):
         log.info("Connected to MySQL database '%s' on %s", config.DB_NAME, config.DB_HOST)
     except Exception as exc:
         log.error("Could not connect to MySQL: %s", exc)
-        log.error("Check DATABASE_URL or DB_HOST / DB_USER / DB_PASSWORD / DB_NAME in backend/.env")
+        log.error(
+            "Set DATABASE_URL (or DB_HOST / DB_USER / DB_PASSWORD / DB_NAME) in the deployment environment. "
+            "backend/.env is only used for local development."
+        )
     yield
 
 
@@ -323,8 +326,7 @@ if FRONTEND_DIR.is_dir():
     # Keep the static mount last so API and page routes take precedence.
     app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 else:
-    log.warning(
-        "Frontend directory '%s' is missing; serving API only. "
-        "Bundle frontend files or deploy the frontend separately.",
+    log.info(
+        "No frontend bundle at '%s'; running API-only mode (frontend is deployed separately).",
         FRONTEND_DIR,
     )

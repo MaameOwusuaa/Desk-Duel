@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS players (
     score           INT          NOT NULL DEFAULT 0,
     correct_count   INT          NOT NULL DEFAULT 0,
     correct_ms_total BIGINT      NOT NULL DEFAULT 0,
-    rank            INT          NULL,
+    `rank`          INT          NULL,
     previous_rank   INT          NULL,
     final_rank      INT          NULL,
     is_online       TINYINT(1)   NOT NULL DEFAULT 0,

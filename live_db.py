@@ -134,7 +134,7 @@ def _assign_ranks(cur, game_id):
         previous_key, previous_rank = key, rank
     if updates:
         cur.executemany(
-            "UPDATE players SET previous_rank = rank, rank = %s WHERE id = %s",
+            "UPDATE players SET previous_rank = `rank`, `rank` = %s WHERE id = %s",
             [(rank, pid) for rank, _unused, pid in updates],
         )
 
@@ -185,7 +185,7 @@ def _advance_due(cur, game):
 
 def _leaderboard(cur, game, game_question_id=None):
     cur.execute(
-        "SELECT p.id, p.name, p.score, p.correct_count, p.correct_ms_total, p.rank, p.previous_rank, "
+        "SELECT p.id, p.name, p.score, p.correct_count, p.correct_ms_total, p.`rank`, p.previous_rank, "
         "p.is_online AS connected, a.points AS last_points, a.is_correct AS last_correct "
         "FROM players p LEFT JOIN answers a ON a.player_id = p.id AND a.game_question_id = %s "
         "WHERE p.game_id = %s ORDER BY p.score DESC, p.correct_ms_total, p.name COLLATE utf8mb4_unicode_ci",
@@ -212,7 +212,7 @@ def _leaderboard(cur, game, game_question_id=None):
 
 
 def _player_info(cur, game, player_id, game_question_id=None, board=None):
-    cur.execute("SELECT id, name, score, correct_count, rank, previous_rank FROM players "
+    cur.execute("SELECT id, name, score, correct_count, `rank`, previous_rank FROM players "
                 "WHERE id = %s AND game_id = %s", (player_id, game["id"]))
     player = cur.fetchone()
     if not player:
@@ -385,7 +385,7 @@ def stream_state(code, role, token, player_id=None, since=-1):
 
 def _finish(cur, game):
     _assign_ranks(cur, game["id"])
-    cur.execute("UPDATE players SET final_rank = rank WHERE game_id = %s", (game["id"],))
+    cur.execute("UPDATE players SET final_rank = `rank` WHERE game_id = %s", (game["id"],))
     _bump(cur, game["id"], "finished", phase="finished", status="finished", ended=True)
 
 
