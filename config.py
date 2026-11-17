@@ -14,8 +14,14 @@ DB_CONNECT_OPTIONS = {"charset": "utf8mb4"}
 
 if DATABASE_URL:
     parsed_url = urlparse(DATABASE_URL)
-    if parsed_url.scheme not in ("mysql", "mysql+mysqlconnector"):
-        raise ValueError("DATABASE_URL must use the mysql:// scheme")
+    # Accept common driver-qualified URLs (for example mysql+pymysql://) too.
+    # The scheme's driver label is not used: connections are made with
+    # mysql-connector-python below.
+    if parsed_url.scheme != "mysql" and not parsed_url.scheme.startswith("mysql+"):
+        raise ValueError(
+            "DATABASE_URL must be a MySQL URL such as "
+            "mysql://user:password@host:3306/desk_duel"
+        )
     if not parsed_url.hostname or not parsed_url.path.strip("/"):
         raise ValueError("DATABASE_URL must include a host and database name")
 
